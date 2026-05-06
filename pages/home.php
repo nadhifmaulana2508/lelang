@@ -290,7 +290,7 @@
                 image: "<?= BASE_URL ?>/img/addo.png",
                 html: `
                     <h2 class="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
-                        Investasi <span class="text-orange-600">Hak Tagih (Cessie)</span>
+                        Investasi <span class="text-orange-600">Cessie</span>
                     </h2>
                     <p class="text-lg text-gray-700 font-medium">
                         Peluang Pengambilalihan Piutang <br class="hidden lg:block">
@@ -320,77 +320,7 @@
         }, 5000);
     });
 
-    // ------------------------------------
-    // 2. Script Fetch API Asset
-    // ------------------------------------
-    fetch("<?= BASE_URL ?>/api/asset/home")
-        .then(res => res.json())
-        .then(res => {
-            const container = document.getElementById("asset-list");
 
-            if (res.status === 200 && Array.isArray(res.data) && res.data.length > 0) {
-                container.innerHTML = ""; 
-                
-                res.data.slice(0, 4).forEach(asset => {
-                    const imageSrc = `<?= BASE_URL ?>/img/agunan/${asset.foto1}`;
-                    const detailUrl = `<?= BASE_URL ?>/detail?id=${asset.id}`;
-                    const defaultImg = `<?= BASE_URL ?>/img/agunan/byl.jpg`;
-                    
-                    const cardHTML = `
-                        <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transform hover:-translate-y-2 transition-all duration-300 relative flex flex-col h-full group">
-                            <div class="relative h-48 overflow-hidden">
-                                <img src="${imageSrc}" alt="Asset" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null;this.src='${defaultImg}';">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-blue-800 text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
-                                    ${asset.proses_penjualan}
-                                </span>
-                            </div>
-
-                            <div class="p-5 flex-1 flex flex-col">
-                                <h4 class="text-xl font-black text-gray-900 mb-1">Rp ${formatRupiah(asset.harga_jual)}</h4>
-                                <p class="text-blue-600 font-bold text-sm mb-3">${asset.jenis_surat} - ${asset.nomor_surat}</p>
-                                
-                                <div class="flex items-start gap-2 mb-4 text-gray-500">
-                                    <i class="fas fa-map-marker-alt mt-1 text-red-500"></i>
-                                    <p class="text-sm line-clamp-2 leading-tight">${asset.alamat_asset}</p>
-                                </div>
-
-                                <div class="mt-auto grid grid-cols-2 gap-2 border-t border-gray-100 pt-4">
-                                    <div class="bg-gray-50 rounded-lg p-2 text-center">
-                                        <p class="text-xs text-gray-500">Luas Tanah</p>
-                                        <p class="text-sm font-bold text-gray-800">${asset.luas_tanah} m&sup2;</p>
-                                    </div>
-                                    <div class="bg-gray-50 rounded-lg p-2 text-center">
-                                        <p class="text-xs text-gray-500">Luas Bangunan</p>
-                                        <p class="text-sm font-bold text-gray-800">${asset.luas_bangunan} m&sup2;</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <a href="${detailUrl}" class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:bg-blue-700 tooltip" title="Lihat Detail">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="https://wa.me/6288228659668?text=Halo%20saya%20tertarik%20dengan%20aset%20${asset.nomor_surat}" target="_blank" class="bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:bg-green-600 tooltip" title="Hubungi Petugas">
-                                    <i class="fab fa-whatsapp text-lg"></i>
-                                </a>
-                            </div>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', cardHTML);
-                });
-            } else {
-                container.innerHTML = `<div class="col-span-full text-center py-10 bg-white rounded-2xl border border-dashed border-gray-300"><p class="text-gray-500 font-medium">Data asset belum tersedia saat ini.</p></div>`;
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching assets:", error);
-            document.getElementById("asset-list").innerHTML = `<div class="col-span-full text-center py-10 bg-red-50 rounded-2xl border border-red-200"><p class="text-red-500 font-medium">Gagal memuat data asset. Periksa koneksi internet Anda.</p></div>`;
-        });
-
-    function formatRupiah(angka) {
-        return new Intl.NumberFormat('id-ID', { style: 'decimal' }).format(angka);
-    }
 
     // ------------------------------------
     // 3. Script Toggle & Tab Switcher FAQ
@@ -457,3 +387,104 @@
         animation: fadeInUp 0.4s ease-out forwards;
     }
 </style>
+
+<script>
+    // ------------------------------------
+    // Script Fetch API Asset (Update Lazy Load & Loading Blur)
+    // ------------------------------------
+    fetch("<?= BASE_URL ?>/api/asset/home")
+        .then(res => res.json())
+        .then(res => {
+            const container = document.getElementById("asset-list");
+
+            if (res.status === 200 && Array.isArray(res.data) && res.data.length > 0) {
+                container.innerHTML = ""; 
+                
+                // Tampilkan 4 aset terbaru di Home
+                res.data.slice(0, 4).forEach(asset => {
+                    const imageSrc = `<?= BASE_URL ?>/img/agunan/${asset.foto1}`;
+                    
+                    // Format URL Konsisten
+                    const detailUrl = `<?= BASE_URL ?>/detail?id=${asset.id}`; 
+                    const defaultImg = `<?= BASE_URL ?>/img/agunan/byl.jpg`;
+                    
+                    // WARNA BADGE DINAMIS
+                    let badgeColor = 'bg-green-500'; 
+                    const status = asset.proses_penjualan.toLowerCase();
+                    if(status === 'sold') badgeColor = 'bg-red-600';
+                    else if(status === 'lelang') badgeColor = 'bg-blue-600';
+                    else if(status === 'cessie') badgeColor = 'bg-orange-500';
+
+                    const cardHTML = `
+                        <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transform hover:-translate-y-2 transition-all duration-300 relative flex flex-col h-full group">
+                            
+                            <div class="relative h-48 overflow-hidden bg-gray-100 shrink-0">
+                                
+                                <div class="absolute inset-0 flex items-center justify-center z-0" id="spinner-home-${asset.id}">
+                                    <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+
+                                <img src="${imageSrc}" 
+                                     loading="lazy" 
+                                     decoding="async"
+                                     alt="Asset" 
+                                     class="relative z-10 w-full h-full object-cover opacity-0 blur-md transition-all duration-700 group-hover:scale-105" 
+                                     onload="this.classList.remove('opacity-0', 'blur-md'); document.getElementById('spinner-home-${asset.id}').classList.add('hidden');" 
+                                     onerror="this.onerror=null; this.src='${defaultImg}'; this.classList.remove('opacity-0', 'blur-md'); document.getElementById('spinner-home-${asset.id}').classList.add('hidden');">
+                                
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 pointer-events-none"></div>
+                                <span class="absolute top-3 left-3 ${badgeColor} text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm z-20">
+                                    ${asset.proses_penjualan}
+                                </span>
+                            </div>
+
+                            <div class="p-5 flex-1 flex flex-col">
+                                <h4 class="text-xl font-black text-blue-600 mb-1">Rp ${formatRupiah(asset.harga_jual)}</h4>
+                                <p class="text-gray-800 font-bold text-sm mb-2 line-clamp-1">${asset.jenis_surat} - ${asset.nomor_surat}</p>
+                                
+                                <div class="flex items-start gap-2 mb-4 text-gray-500">
+                                    <i class="fas fa-map-marker-alt mt-0.5 text-red-400"></i>
+                                    <p class="text-xs line-clamp-2 leading-relaxed">${asset.alamat_asset}</p>
+                                </div>
+
+                                <div class="mt-auto grid grid-cols-2 gap-2 border-t border-gray-50 pt-3">
+                                    <div class="bg-gray-50 rounded-lg p-2 text-center">
+                                        <p class="text-[10px] text-gray-500 font-medium">LT</p>
+                                        <p class="text-xs font-bold text-gray-800">${asset.luas_tanah} m²</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-2 text-center">
+                                        <p class="text-[10px] text-gray-500 font-medium">LB</p>
+                                        <p class="text-xs font-bold text-gray-800">${asset.luas_bangunan} m²</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30">
+                                <a href="${detailUrl}" class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:bg-blue-700 tooltip" title="Lihat Detail">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="https://wa.me/6288228659668?text=Halo%20Admin%20BKK%20Jateng,%20saya%20tertarik%20dengan%20aset%20${asset.nomor_surat}" target="_blank" class="bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:bg-green-600 tooltip" title="Hubungi Petugas">
+                                    <i class="fab fa-whatsapp text-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', cardHTML);
+                });
+            } else {
+                container.innerHTML = `<div class="col-span-full text-center py-10 bg-white rounded-2xl border border-dashed border-gray-300"><p class="text-gray-500 font-medium">Data asset belum tersedia saat ini.</p></div>`;
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching assets:", error);
+            document.getElementById("asset-list").innerHTML = `<div class="col-span-full text-center py-10 bg-red-50 rounded-2xl border border-red-200"><p class="text-red-500 font-medium">Gagal memuat data asset. Periksa koneksi internet Anda.</p></div>`;
+        });
+
+    // Format Rupiah
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'decimal' }).format(angka);
+    }
+</script>

@@ -35,7 +35,7 @@
                 <div id="dropdownInfo" class="absolute left-0 mt-4 w-48 bg-white text-blue-900 rounded-lg shadow-xl hidden flex-col z-20 border border-gray-100 overflow-hidden transform origin-top transition-all duration-300">
                     <a href="prosedur" class="block px-5 py-3 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200">Prosedur</a>
                     <a href="faq" class="block px-5 py-3 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200 border-t border-gray-100">FAQ</a>
-                    <a href="#" class="block px-5 py-3 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200 border-t border-gray-100">Kontak</a>
+                    <a href="kontak" class="block px-5 py-3 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200 border-t border-gray-100">Kontak</a>
                 </div>
             </div>
         </nav>
@@ -61,7 +61,7 @@
                     <!-- Sub-menu pakai abu-abu menengah (text-gray-600) -->
                     <a href="prosedur" class="block text-gray-600 hover:text-blue-600 hover:translate-x-2 transition-all duration-300">Prosedur</a>
                     <a href="faq" class="block text-gray-600 hover:text-blue-600 hover:translate-x-2 transition-all duration-300">FAQ</a>
-                    <a href="#" class="block text-gray-600 hover:text-blue-600 hover:translate-x-2 transition-all duration-300">Kontak</a>
+                    <a href="kontak" class="block text-gray-600 hover:text-blue-600 hover:translate-x-2 transition-all duration-300">Kontak</a>
                 </div>
             </div>
         </div>
