@@ -6,7 +6,10 @@ function formatRupiah($angka, $prefix = 'Rp') {
     return $prefix . ' ' . number_format($angka, 0, ',', '.');
 }
 
-$id = $_GET['id'] ?? null;
+// ✅ FIX AAPANEL: Sanitasi input GET untuk mencegah blokir WAF (XSS/SQLi prevention)
+$raw_id = $_GET['id'] ?? null;
+$id = $raw_id ? htmlspecialchars($raw_id, ENT_QUOTES, 'UTF-8') : null;
+$id_api = urlencode($id);
 
 if (!$id) {
     echo "<div class='mt-32 text-center text-red-500 font-bold text-xl'>ID tidak ditemukan</div>";
@@ -14,7 +17,7 @@ if (!$id) {
 }
 
 // Fetch data menggunakan PHP
-$response = @file_get_contents(BASE_URL . "/api/asset/detail/?id=$id");
+$response = @file_get_contents(BASE_URL . "/api/asset/detail/?id=$id_api");
 if (!$response) {
     echo "<div class='mt-32 text-center text-red-500 font-bold text-xl'>Gagal mengambil data asset.</div>";
     exit;
@@ -94,7 +97,7 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
                     </svg>
                 </div>
                 <img id="mainImage" 
-                     src="<?= BASE_URL ?>/img/agunan/<?= $asset['foto1'] ?? '-'; ?>" 
+                     src="<?= BASE_URL ?>/img/agunan/<?= htmlspecialchars($asset['foto1'] ?? '-') ?>" 
                      class="w-full h-[250px] sm:h-[350px] md:h-[400px] object-cover transition-all duration-300 relative z-10"
                      onload="document.getElementById('mainImageLoader').classList.add('hidden')">
             </div>
@@ -102,15 +105,15 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
             <div class="flex overflow-x-auto space-x-3 p-2 mt-2 no-scrollbar">
                 <?php for ($i = 1; $i <= 4; $i++): ?>
                     <?php if (!empty($asset["foto$i"])): ?>
-                        <img src="<?= BASE_URL ?>/img/agunan/<?= $asset["foto$i"]; ?>" 
+                        <img src="<?= BASE_URL ?>/img/agunan/<?= htmlspecialchars($asset["foto$i"]) ?>" 
                              class="thumbnail w-20 h-16 sm:w-24 sm:h-20 object-cover rounded-lg shrink-0 cursor-pointer hover:opacity-80 border-2 border-transparent hover:border-blue-500 transition-all duration-200"
-                             data-img="<?= BASE_URL ?>/img/agunan/<?= $asset["foto$i"]; ?>">
+                             data-img="<?= BASE_URL ?>/img/agunan/<?= htmlspecialchars($asset["foto$i"]) ?>">
                     <?php endif; ?>
                 <?php endfor; ?>
             </div>
 
             <p class="text-gray-500 text-[10px] md:text-sm mt-3 font-medium px-1">
-                <i class="fas fa-building mr-1"></i> Dipublikasikan oleh <?= $asset['nama_kantor'] ?? '-'; ?> (<?= $asset['kode_kantor'] ?? '-'; ?>)
+                <i class="fas fa-building mr-1"></i> Dipublikasikan oleh <?= htmlspecialchars($asset['nama_kantor'] ?? '-') ?> (<?= htmlspecialchars($asset['kode_kantor'] ?? '-') ?>)
             </p>
         </div>
 
@@ -145,7 +148,7 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
         <div class="flex flex-col <?= !empty($jadwal_lelang) ? 'md:flex-row gap-4' : '' ?> mt-6">
             <div id="deskripsi" class="scroll-target <?= empty($jadwal_lelang) ? 'w-full' : 'w-full md:w-1/2' ?> bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h2 class="text-lg md:text-xl font-extrabold text-gray-800">Deskripsi Aset</h2>
-                <p class="text-sm md:text-base text-gray-600 mt-3 leading-relaxed"><?= $asset['deskripsi'] ?? '-'; ?></p>
+                <p class="text-sm md:text-base text-gray-600 mt-3 leading-relaxed"><?= htmlspecialchars($asset['deskripsi'] ?? '-') ?></p>
             </div>
 
             <?php if (!empty($jadwal_lelang)) : ?>
@@ -173,28 +176,28 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
                     <span class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl font-black text-sm sm:text-base">LT</span>
                     <div>
                         <p class="text-[10px] sm:text-xs text-gray-500">Luas Tanah</p>
-                        <p class="text-sm sm:text-base text-gray-800 font-bold"><?= $asset['luas_tanah'] ?? '-'; ?> m²</p>
+                        <p class="text-sm sm:text-base text-gray-800 font-bold"><?= htmlspecialchars($asset['luas_tanah'] ?? '-') ?> m²</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl font-black text-sm sm:text-base">LB</span>
                     <div>
                         <p class="text-[10px] sm:text-xs text-gray-500">Luas Bangunan</p>
-                        <p class="text-sm sm:text-base text-gray-800 font-bold"><?= $asset['luas_bangunan'] ?? '-'; ?> m²</p>
+                        <p class="text-sm sm:text-base text-gray-800 font-bold"><?= htmlspecialchars($asset['luas_bangunan'] ?? '-') ?> m²</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-orange-50 text-orange-500 rounded-xl font-black"><i class="fas fa-layer-group"></i></span>
                     <div>
                         <p class="text-[10px] sm:text-xs text-gray-500">Jumlah Lantai</p>
-                        <p class="text-sm sm:text-base text-gray-800 font-bold"><?= $asset['lantai'] ?? '-'; ?> Lantai</p>
+                        <p class="text-sm sm:text-base text-gray-800 font-bold"><?= htmlspecialchars($asset['lantai'] ?? '-') ?> Lantai</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 col-span-2 sm:col-span-3">
                     <span class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-green-50 text-green-600 rounded-xl font-black"><i class="fas fa-file-alt"></i></span>
                     <div>
                         <p class="text-[10px] sm:text-xs text-gray-500">Legalitas</p>
-                        <p class="text-sm sm:text-base text-gray-800 font-bold"><?= $asset['jenis_surat'] ?? '-'; ?> No. <?= $asset['nomor_surat'] ?? '-'; ?></p>
+                        <p class="text-sm sm:text-base text-gray-800 font-bold"><?= htmlspecialchars($asset['jenis_surat'] ?? '-') ?> No. <?= htmlspecialchars($asset['nomor_surat'] ?? '-') ?></p>
                     </div>
                 </div>
             </div>
@@ -208,7 +211,7 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
 
         <div id="lokasi" class="scroll-target mt-6 bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 class="text-lg md:text-xl font-extrabold text-gray-800 mb-4">Lokasi Aset</h2>
-            <p class="text-sm md:text-base text-gray-600 mb-4 leading-relaxed"><i class="fas fa-map-marker-alt text-red-500 mr-2"></i> <?= $asset['alamat_asset'] ?? '-'; ?></p>
+            <p class="text-sm md:text-base text-gray-600 mb-4 leading-relaxed"><i class="fas fa-map-marker-alt text-red-500 mr-2"></i> <?= htmlspecialchars($asset['alamat_asset'] ?? '-') ?></p>
             
             <div id="map" class="shadow-inner border border-gray-200"></div>
 
@@ -328,25 +331,25 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
             
             <div class="flex justify-between items-center mb-2">
                 <span class="inline-block bg-green-100 text-green-700 text-[10px] sm:text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wide">
-                    <?= $asset['proses_penjualan'] ?? '-'; ?>
+                    <?= htmlspecialchars($asset['proses_penjualan'] ?? '-') ?>
                 </span>
                 <div class="flex items-center text-gray-500 text-xs sm:text-sm font-bold tooltip" title="Jumlah dilihat">
                     <i class="fas fa-eye mr-1.5 text-blue-500"></i>
-                    <span id="view-count-text"><?= isset($asset['view_count']) ? $asset['view_count'] : '0'; ?></span>
+                    <span id="view-count-text"><?= htmlspecialchars(isset($asset['view_count']) ? $asset['view_count'] : '0') ?></span>
                 </div>
             </div>
 
-            <h2 class="text-base md:text-lg font-bold text-gray-800 leading-tight"><?= $asset['jenis_surat'] ?? '-'; ?> No. <?= $asset['nomor_surat'] ?? '-'; ?></h2>
+            <h2 class="text-base md:text-lg font-bold text-gray-800 leading-tight"><?= htmlspecialchars($asset['jenis_surat'] ?? '-') ?> No. <?= htmlspecialchars($asset['nomor_surat'] ?? '-') ?></h2>
             <p class="text-blue-600 text-2xl md:text-3xl font-black mt-2"><?= formatRupiah($asset['harga_jual']) ?? '-'; ?></p>
 
             <div class="grid grid-cols-2 gap-2 sm:gap-3 mt-4 sm:mt-5 border-t border-b border-gray-100 py-4">
                 <div class="bg-gray-50 rounded-xl p-2 sm:p-3 text-center">
                     <p class="text-[10px] sm:text-xs text-gray-500 font-medium mb-1">Luas Tanah</p>
-                    <p class="font-bold text-gray-800 text-sm sm:text-base"><?= $asset['luas_tanah'] ?? '-'; ?> m²</p>
+                    <p class="font-bold text-gray-800 text-sm sm:text-base"><?= htmlspecialchars($asset['luas_tanah'] ?? '-') ?> m²</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-2 sm:p-3 text-center">
                     <p class="text-[10px] sm:text-xs text-gray-500 font-medium mb-1">Luas Bangunan</p>
-                    <p class="font-bold text-gray-800 text-sm sm:text-base"><?= $asset['luas_bangunan'] ?? '-'; ?> m²</p>
+                    <p class="font-bold text-gray-800 text-sm sm:text-base"><?= htmlspecialchars($asset['luas_bangunan'] ?? '-') ?> m²</p>
                 </div>
             </div>
 
@@ -384,7 +387,7 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
         <form id="formPengajuanAset" class="p-5 space-y-4">
             <div>
                 <label class="block text-xs font-bold text-gray-700 mb-1">Aset Pilihan</label>
-                <input type="text" value="<?= $asset['jenis_surat'] ?? '' ?> No. <?= $asset['nomor_surat'] ?? '' ?>" readonly class="w-full border border-gray-200 rounded-lg p-2.5 bg-gray-100 text-gray-500 text-sm font-semibold outline-none">
+                <input type="text" value="<?= htmlspecialchars($asset['jenis_surat'] ?? '') ?> No. <?= htmlspecialchars($asset['nomor_surat'] ?? '') ?>" readonly class="w-full border border-gray-200 rounded-lg p-2.5 bg-gray-100 text-gray-500 text-sm font-semibold outline-none">
             </div>
             <div>
                 <label class="block text-xs font-bold text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
@@ -434,21 +437,11 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
     </div>
 </div>
 
-<div id="rekomendasiAset" class="max-w-6xl mx-auto mt-10 px-4 mb-20">
-    <h3 class="text-xl md:text-2xl font-extrabold text-gray-800 mb-6">Rekomendasi Lainnya</h3>
-    <div class="swiper mySwiper">
-        <div class="swiper-wrapper" id="rekomendasiWrapper">
-            </div>
-    </div>
-</div>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
 <script>
     // ----------------------------------------------------
-    // 0. SCRIPT TRACK VIEW COUNT (Hit API Endpoint dummy)
+    // 0. SCRIPT TRACK VIEW COUNT
     // ----------------------------------------------------
     fetch("<?= BASE_URL ?>/api/asset/track-view", {
         method: "POST", 
@@ -467,7 +460,6 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
     const formSkemaSelect = document.getElementById('formSkema');
     const formElement = document.getElementById("formPengajuanAset");
 
-    // Modal Notif Elemen
     const modalNotif = document.getElementById('modalNotif');
     const modalNotifContent = document.getElementById('modalNotifContent');
     const notifIconWrapper = document.getElementById('notifIconWrapper');
@@ -498,7 +490,6 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
         }, 300);
     }
 
-    // Tampilkan Modal Notifikasi (Sukses/Error)
     function tampilNotif(type, title, message) {
         notifTitle.innerText = title;
         notifMessage.innerText = message;
@@ -528,7 +519,6 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
         }, 300);
     }
 
-    // Helper: Validasi Manual HTML5 form
     function checkFormValidity() {
         if (!formElement.checkValidity()) {
             formElement.reportValidity();
@@ -537,7 +527,6 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
         return true;
     }
 
-    // Helper: Generate req.body payload
     function getFormPayload() {
         return {
             id_aset: "<?= $id ?>",
@@ -548,7 +537,6 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
         };
     }
 
-    // Aksi 1: Hit API DB (Tombol Biru)
     function submitToDB() {
         if (!checkFormValidity()) return;
         const payload = getFormPayload();
@@ -570,27 +558,22 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
         .then(data => {
             btnSubmit.innerHTML = originalText;
             btnSubmit.disabled = false;
-            
             tutupModalPengajuan();
             formElement.reset();
-            
-            // Tampilkan modal Sukses elegan pengganti Alert
             tampilNotif('success', 'Berhasil!', 'Data pengajuan pembiayaan berhasil dikirim ke database PT BPR BKK Jateng.');
         })
         .catch(err => {
-            // Kalau API DB Gagal/Belum siap, muncul modal Error
             btnSubmit.innerHTML = originalText;
             btnSubmit.disabled = false;
             tampilNotif('error', 'Gagal', 'Terjadi kesalahan saat mengirim data. Pastikan endpoint API BE sudah benar.');
         });
     }
 
-    // Aksi 2: Redirect WA (Tombol Hijau)
     function submitToWA() {
         if (!checkFormValidity()) return;
         const payload = getFormPayload();
 
-        const asetInfo = "<?= $asset['jenis_surat'] ?? '' ?> No. <?= $asset['nomor_surat'] ?? '' ?>";
+        const asetInfo = "<?= htmlspecialchars($asset['jenis_surat'] ?? '') ?> No. <?= htmlspecialchars($asset['nomor_surat'] ?? '') ?>";
         let textWa = `Halo Admin BKK Jateng, saya berminat untuk menanyakan aset berikut:\n\n`;
         textWa += `*Detail Aset:* ${asetInfo}\n`;
         textWa += `*Nama Lengkap:* ${payload.nama_lengkap}\n`;
@@ -691,59 +674,40 @@ if (strtolower($asset['proses_penjualan']) === 'sold') {
         L.marker([latitude, longitude]).addTo(map).bindPopup("<b>Lokasi Aset</b>").openPopup();
     });
 
+// ----------------------------------------------------
+    // 6. Fix Mobile Btn Hide: Hilang SEBELUM kena footer
     // ----------------------------------------------------
-    // 6. Fetch Rekomendasi Aset & Hide Mobile Btn on Scroll
-    // ----------------------------------------------------
-    fetch("<?= BASE_URL ?>/api/asset/home")
-        .then(res => res.json())
-        .then(res => {
-            const wrapper = document.getElementById("rekomendasiWrapper");
-            if (res.status === 200 && Array.isArray(res.data)) {
-                res.data.forEach(asset => {
-                    const div = document.createElement("div");
-                    div.className = "swiper-slide !w-auto";
-                    
-                    const detailUrl = `<?= BASE_URL ?>/detail/${asset.id}`;
-                    const imgUrl = `<?= BASE_URL ?>/img/agunan/${asset.foto1}`;
-                    const defaultImg = `<?= BASE_URL ?>/img/agunan/byl.jpg`;
-
-                    div.innerHTML = `
-                        <a href="${detailUrl}" class="block w-[240px] md:w-[260px] pb-4">
-                            <article class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 relative group">
-                                <div class="relative h-36 md:h-40">
-                                    <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null;this.src='${defaultImg}';">
-                                    <span class="absolute top-2 left-2 bg-green-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">${asset.proses_penjualan}</span>
-                                </div>
-                                <div class="p-3 md:p-4">
-                                    <p class="text-blue-600 font-black text-base md:text-lg mb-1">Rp ${new Intl.NumberFormat('id-ID').format(asset.harga_jual)}</p>
-                                    <p class="text-gray-800 font-bold text-xs md:text-sm truncate">${asset.jenis_surat} - ${asset.nomor_surat}</p>
-                                    <p class="text-gray-500 text-[10px] md:text-xs mt-1 truncate"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> ${asset.alamat_asset}</p>
-                                </div>
-                            </article>
-                        </a>
-                    `;
-                    wrapper.appendChild(div);
-                });
-
-                new Swiper(".mySwiper", {
-                    slidesPerView: "auto",
-                    spaceBetween: 12,
-                    freeMode: true,
-                });
-            }
-        });
-
     const mobileButtons = document.getElementById('mobileButtons');
-    const rekomendasi = document.getElementById('rekomendasiAset');
+    
+    // Kita pakai window scroll listener
     window.addEventListener('scroll', () => {
         if(!mobileButtons) return;
-        const rekomTop = rekomendasi.getBoundingClientRect().top;
+
+        // Ambil elemen footer atau batas bawah halaman
+        const footer = document.querySelector('footer'); // Pastikan tagnya <footer> atau ganti ke id footer kamu
         const windowHeight = window.innerHeight;
+        const scrollY = window.scrollY;
+        const bodyHeight = document.documentElement.scrollHeight;
+
+        // LOGIKA 1: Jika pakai deteksi elemen footer (Lebih Presisi)
+        if (footer) {
+            const footerTop = footer.getBoundingClientRect().top;
+            // Jika jarak atas footer ke layar sudah kurang dari tinggi layar (footer mulai kelihatan)
+            if (footerTop < windowHeight) {
+                mobileButtons.classList.add('translate-y-full', 'opacity-0');
+            } else {
+                mobileButtons.classList.remove('translate-y-full', 'opacity-0');
+            }
+        } 
         
-        if (rekomTop < windowHeight) {
-            mobileButtons.classList.add('translate-y-full');
-        } else {
-            mobileButtons.classList.remove('translate-y-full');
+        // LOGIKA 2: Backup jika footer tidak ditemukan (Pakai kalkulasi tinggi halaman)
+        else {
+            // Hilangkan tombol 100px sebelum mentok bawah
+            if ((windowHeight + scrollY) >= (bodyHeight - 150)) {
+                mobileButtons.classList.add('translate-y-full', 'opacity-0');
+            } else {
+                mobileButtons.classList.remove('translate-y-full', 'opacity-0');
+            }
         }
     });
 </script>
