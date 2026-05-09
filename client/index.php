@@ -56,8 +56,29 @@ require_once __DIR__ . '/includes/components.php';
 
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
             <?php 
+                // ==========================================
+                // ROUTER VIEW (SUPPORT CLEAN URL & PARAMETER ID)
+                // ==========================================
                 
-                // Router View
+                // 1. Ambil URL dari path (untuk Clean URL)
+                $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'dashboard';
+                $url = filter_var($url, FILTER_SANITIZE_URL);
+                $urlParts = explode('/', $url);
+                
+                // 2. Tentukan nama halaman (Segment 1) dan ID (Segment 2)
+                $page = basename($urlParts[0] ?? 'dashboard');
+                $param_id = $urlParts[1] ?? null;
+
+                // 3. Masukkan ke $_GET agar bisa dibaca oleh file view (form_agunan.php dll)
+                if ($param_id !== null) {
+                    $_GET['id'] = htmlspecialchars($param_id);
+                }
+
+                // Jika masih ada query string gaya lama (buat jaga-jaga kalau belum ke-update semua)
+                if (isset($_GET['page'])) {
+                    $page = $_GET['page'];
+                }
+
                 $allowed_pages = ['dashboard', 'data', 'form', 'view', 'pengajuan', 'calon_cessie', 'form_cessie', 'agunan', 'form_agunan'];
                 
                 if (in_array($page, $allowed_pages)) {
@@ -67,9 +88,10 @@ require_once __DIR__ . '/includes/components.php';
                     if(file_exists($view_file)) {
                         include $view_file;
                     } else {
-                        echo "<p class='text-red-500 font-bold mt-4'>Error: File <b>{$view_name}.php</b> tidak ditemukan di folder views/.</p>";
+                        echo "<div class='text-center py-20'><p class='text-red-500 text-6xl font-black'>404</p><p class='text-gray-500 font-bold mt-4'>Error: File <b>{$view_name}.php</b> tidak ditemukan di folder views/.</p></div>";
                     }
                 } else {
+                    // Default fallback jika halaman tidak dikenal
                     include __DIR__ . "/includes/views/dashboard.php";
                 }
             ?>
