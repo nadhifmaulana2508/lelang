@@ -8,14 +8,16 @@ require_once __DIR__ . '/../api/config/config.php';
 // ==========================================
 // 2. CORE ROUTING (BULLETPROOF REQUEST_URI)
 // ==========================================
-// Ambil URL langsung dari Address Bar Browser
-$request_uri = $_SERVER['REQUEST_URI'];
-$request_uri = explode('?', $request_uri)[0]; // Buang parameter ?id= jika ada
-
-// Potong dan ambil kata SETELAH folder '/client/'
-$parts = explode('/client/', $request_uri);
-$route = isset($parts[1]) ? $parts[1] : '';
-$route = trim($route, '/');
+// Cek apakah parameter page sudah dilempar dari web server (seperti Nginx/Apache)
+if (isset($_GET['page']) && !empty($_GET['page'])) {
+    $route = trim($_GET['page'], '/');
+} else {
+    // Fallback jika tidak ada parameter page, cari dari REQUEST_URI relatif terhadap SCRIPT_NAME
+    $basepath = implode('/', array_slice(explode('/', $_SERVER['SCRIPT_NAME']), 0, -1)) . '/';
+    $uri = substr($_SERVER['REQUEST_URI'], strlen($basepath));
+    if (strstr($uri, '?')) $uri = substr($uri, 0, strpos($uri, '?'));
+    $route = trim($uri, '/');
+}
 
 // Jika kosong, arahkan ke dashboard
 if (empty($route)) {
