@@ -1,31 +1,32 @@
 <?php
 // ==========================================
-// 1. LOAD CONFIG UTAMA
-// (Kita hapus fungsi BASE_URL di sini karena sudah ada di config.php!)
-// ==========================================
+// 1. DYNAMIC BASE URL (Aman dari bentrok)
+
+// Load config utama
 require_once __DIR__ . '/../api/config/config.php';
 
 // ==========================================
-// 2. CORE ROUTING LOGIC (CLEAN URL)
-// (Kita taruh di atas sebelum auth_logic agar sidebar tau kita di page mana)
+// 2. CORE ROUTING (BULLETPROOF REQUEST_URI)
 // ==========================================
+// Ambil URL langsung dari Address Bar Browser
+$request_uri = $_SERVER['REQUEST_URI'];
+$request_uri = explode('?', $request_uri)[0]; // Buang parameter ?id= jika ada
 
-// Tarik parameter 'url' dari Nginx/Apache (contoh: url=form_agunan/12)
-$url = isset($_GET['url']) && !empty($_GET['url']) ? rtrim($_GET['url'], '/') : 'dashboard';
-$url = filter_var($url, FILTER_SANITIZE_URL);
-$urlParts = explode('/', $url);
+// Potong dan ambil kata SETELAH folder '/client/'
+$parts = explode('/client/', $request_uri);
+$route = isset($parts[1]) ? $parts[1] : '';
+$route = trim($route, '/');
 
-// Pecah Segment 1 (Halaman) dan Segment 2 (Parameter ID)
-$page = basename($urlParts[0] ?? 'dashboard');
-$param_id = $urlParts[1] ?? null;
-
-// Fallback: Kalau ada URL gaya lama (?page=agunan)
-if (isset($_GET['page']) && !empty($_GET['page'])) {
-    $page = $_GET['page'];
+// Jika kosong, arahkan ke dashboard
+if (empty($route)) {
+    $route = 'dashboard';
 }
 
-// AUTO-INJECT ID & PAGE ke $_GET 
-// Agar form_agunan.php bisa baca ID, dan auth_logic.php bisa highlight Sidebar dengan benar!
+$urlParts = explode('/', $route);
+$page = basename($urlParts[0]);
+$param_id = $urlParts[1] ?? null;
+
+// Suntikkan ke $_GET agar file View & Sidebar tetap berfungsi normal!
 if ($param_id !== null) {
     $_GET['id'] = htmlspecialchars($param_id);
 }
@@ -102,7 +103,6 @@ require_once __DIR__ . '/includes/components.php';
                         </div>";
                     }
                 } else {
-                    // TAMPILAN 404 KHUSUS ADMIN (Kalau URL Ngaco)
                     echo "
                     <div class='container mx-auto px-6 py-20 mt-10 text-center min-h-[60vh] flex flex-col justify-center items-center'>
                         <h1 class='text-9xl font-extrabold text-blue-900'>404</h1>
