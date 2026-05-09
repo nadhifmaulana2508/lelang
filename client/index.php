@@ -1,17 +1,39 @@
 <?php
 // ==========================================
-// 1. DYNAMIC BASE URL
-// ==========================================
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-$domain = $_SERVER['HTTP_HOST'];
-$folder = dirname($_SERVER['SCRIPT_NAME']);
-$folder = ($folder == '/' || $folder == '\\') ? '' : $folder;
-define('BASE_URL', $protocol . "://" . $domain . $folder);
-
-// ==========================================
-// 2. LOAD DEPENDENCIES
+// 1. LOAD CONFIG UTAMA
+// (Kita hapus fungsi BASE_URL di sini karena sudah ada di config.php!)
 // ==========================================
 require_once __DIR__ . '/../api/config/config.php';
+
+// ==========================================
+// 2. CORE ROUTING LOGIC (CLEAN URL)
+// (Kita taruh di atas sebelum auth_logic agar sidebar tau kita di page mana)
+// ==========================================
+
+// Tarik parameter 'url' dari Nginx/Apache (contoh: url=form_agunan/12)
+$url = isset($_GET['url']) && !empty($_GET['url']) ? rtrim($_GET['url'], '/') : 'dashboard';
+$url = filter_var($url, FILTER_SANITIZE_URL);
+$urlParts = explode('/', $url);
+
+// Pecah Segment 1 (Halaman) dan Segment 2 (Parameter ID)
+$page = basename($urlParts[0] ?? 'dashboard');
+$param_id = $urlParts[1] ?? null;
+
+// Fallback: Kalau ada URL gaya lama (?page=agunan)
+if (isset($_GET['page']) && !empty($_GET['page'])) {
+    $page = $_GET['page'];
+}
+
+// AUTO-INJECT ID & PAGE ke $_GET 
+// Agar form_agunan.php bisa baca ID, dan auth_logic.php bisa highlight Sidebar dengan benar!
+if ($param_id !== null) {
+    $_GET['id'] = htmlspecialchars($param_id);
+}
+$_GET['page'] = $page; 
+
+// ==========================================
+// 3. LOAD LOGIC & COMPONENTS
+// ==========================================
 require_once __DIR__ . '/includes/auth_logic.php';
 require_once __DIR__ . '/includes/asset_logic.php';
 require_once __DIR__ . '/includes/components.php';
@@ -37,7 +59,6 @@ require_once __DIR__ . '/includes/components.php';
 <body class="text-gray-800 flex h-screen overflow-hidden">
 
 <?php if (!$is_logged_in): ?>
-    <!-- HALAMAN LOGIN -->
     <div class="min-h-screen w-full flex items-center justify-center px-4 bg-[#0b132b]">
         <div class="bg-white p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md">
             <div class="text-center mb-8">
@@ -57,32 +78,6 @@ require_once __DIR__ . '/includes/components.php';
     </div>
 <?php else: ?>
     
-    <?php 
-    // ==========================================
-    // 3. CORE ROUTING LOGIC (CLEAN URL SUPPORT)
-    // ==========================================
-    
-    // Tarik parameter 'url' dari Nginx (contoh: url=agunan/12)
-    $url = isset($_GET['url']) && !empty($_GET['url']) ? rtrim($_GET['url'], '/') : 'dashboard';
-    $url = filter_var($url, FILTER_SANITIZE_URL);
-    $urlParts = explode('/', $url);
-    
-    // Pecah Segment 1 (Halaman) dan Segment 2 (Parameter ID)
-    $page = basename($urlParts[0] ?? 'dashboard');
-    $param_id = $urlParts[1] ?? null;
-
-    // AUTO-INJECT ID ke $_GET agar form_agunan.php dll otomatis bisa edit!
-    if ($param_id !== null) {
-        $_GET['id'] = htmlspecialchars($param_id);
-    }
-
-    // Fallback kalau-kalau ada URL gaya lama (?page=) yang nyangkut
-    if (isset($_GET['page']) && !empty($_GET['page'])) {
-        $page = $_GET['page'];
-    }
-    ?>
-
-    <!-- RENDER HALAMAN -->
     <?php renderSidebar($page, $is_superadmin, $user_kode); ?>
     
     <main class="flex-1 flex flex-col h-full overflow-hidden relative z-10 bg-[#f4f7fb]">
