@@ -1,11 +1,20 @@
 <?php
+// ==========================================
+// 1. DYNAMIC BASE URL
+// ==========================================
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$domain = $_SERVER['HTTP_HOST'];
+$folder = dirname($_SERVER['SCRIPT_NAME']);
+$folder = ($folder == '/' || $folder == '\\') ? '' : $folder;
+define('BASE_URL', $protocol . "://" . $domain . $folder);
 
-// 1. Load Config & Logika
+// ==========================================
+// 2. LOAD DEPENDENCIES
+// ==========================================
 require_once __DIR__ . '/../api/config/config.php';
 require_once __DIR__ . '/includes/auth_logic.php';
 require_once __DIR__ . '/includes/asset_logic.php';
 require_once __DIR__ . '/includes/components.php';
-// ... (sisa kode admin.php di bawahnya)
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,8 +27,6 @@ require_once __DIR__ . '/includes/components.php';
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f7fb; }
-        
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -30,6 +37,7 @@ require_once __DIR__ . '/includes/components.php';
 <body class="text-gray-800 flex h-screen overflow-hidden">
 
 <?php if (!$is_logged_in): ?>
+    <!-- HALAMAN LOGIN -->
     <div class="min-h-screen w-full flex items-center justify-center px-4 bg-[#0b132b]">
         <div class="bg-white p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md">
             <div class="text-center mb-8">
@@ -48,37 +56,40 @@ require_once __DIR__ . '/includes/components.php';
         </div>
     </div>
 <?php else: ?>
+    
+    <?php 
+    // ==========================================
+    // 3. CORE ROUTING LOGIC (CLEAN URL SUPPORT)
+    // ==========================================
+    
+    // Tarik parameter 'url' dari Nginx (contoh: url=agunan/12)
+    $url = isset($_GET['url']) && !empty($_GET['url']) ? rtrim($_GET['url'], '/') : 'dashboard';
+    $url = filter_var($url, FILTER_SANITIZE_URL);
+    $urlParts = explode('/', $url);
+    
+    // Pecah Segment 1 (Halaman) dan Segment 2 (Parameter ID)
+    $page = basename($urlParts[0] ?? 'dashboard');
+    $param_id = $urlParts[1] ?? null;
+
+    // AUTO-INJECT ID ke $_GET agar form_agunan.php dll otomatis bisa edit!
+    if ($param_id !== null) {
+        $_GET['id'] = htmlspecialchars($param_id);
+    }
+
+    // Fallback kalau-kalau ada URL gaya lama (?page=) yang nyangkut
+    if (isset($_GET['page']) && !empty($_GET['page'])) {
+        $page = $_GET['page'];
+    }
+    ?>
+
+    <!-- RENDER HALAMAN -->
     <?php renderSidebar($page, $is_superadmin, $user_kode); ?>
     
     <main class="flex-1 flex flex-col h-full overflow-hidden relative z-10 bg-[#f4f7fb]">
-        
         <?php renderHeader(); ?>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
             <?php 
-                // ==========================================
-                // ROUTER VIEW (SUPPORT CLEAN URL & PARAMETER ID)
-                // ==========================================
-                
-                // 1. Ambil URL dari path (untuk Clean URL)
-                $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'dashboard';
-                $url = filter_var($url, FILTER_SANITIZE_URL);
-                $urlParts = explode('/', $url);
-                
-                // 2. Tentukan nama halaman (Segment 1) dan ID (Segment 2)
-                $page = basename($urlParts[0] ?? 'dashboard');
-                $param_id = $urlParts[1] ?? null;
-
-                // 3. Masukkan ke $_GET agar bisa dibaca oleh file view (form_agunan.php dll)
-                if ($param_id !== null) {
-                    $_GET['id'] = htmlspecialchars($param_id);
-                }
-
-                // Jika masih ada query string gaya lama (buat jaga-jaga kalau belum ke-update semua)
-                if (isset($_GET['page'])) {
-                    $page = $_GET['page'];
-                }
-
                 $allowed_pages = ['dashboard', 'data', 'form', 'view', 'pengajuan', 'calon_cessie', 'form_cessie', 'agunan', 'form_agunan'];
                 
                 if (in_array($page, $allowed_pages)) {
@@ -88,11 +99,26 @@ require_once __DIR__ . '/includes/components.php';
                     if(file_exists($view_file)) {
                         include $view_file;
                     } else {
-                        echo "<div class='text-center py-20'><p class='text-red-500 text-6xl font-black'>404</p><p class='text-gray-500 font-bold mt-4'>Error: File <b>{$view_name}.php</b> tidak ditemukan di folder views/.</p></div>";
+                        echo "
+                        <div class='container mx-auto px-6 py-20 mt-10 text-center flex flex-col justify-center items-center'>
+                            <h1 class='text-9xl font-extrabold text-blue-900'>404</h1>
+                            <p class='text-gray-600 mt-8 mb-6 text-lg'>Error: File <b>{$view_name}.php</b> tidak ditemukan di folder views/.</p>
+                            <a href='dashboard' class='bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg'>Kembali ke Dashboard</a>
+                        </div>";
                     }
                 } else {
-                    // Default fallback jika halaman tidak dikenal
-                    include __DIR__ . "/includes/views/dashboard.php";
+                    // TAMPILAN 404 KHUSUS ADMIN (Kalau URL Ngaco)
+                    echo "
+                    <div class='container mx-auto px-6 py-20 mt-10 text-center min-h-[60vh] flex flex-col justify-center items-center'>
+                        <h1 class='text-9xl font-extrabold text-blue-900'>404</h1>
+                        <div class='bg-orange-500 text-white px-2 text-sm rounded rotate-12 absolute'>
+                            Halaman Tidak Ditemukan
+                        </div>
+                        <p class='text-gray-600 mt-8 mb-6 text-lg'>Waduh brokuu, menu <b>{$page}</b> yang kamu cari nggak ada di panel admin ini.</p>
+                        <a href='dashboard' class='bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg'>
+                            Kembali ke Dashboard
+                        </a>
+                    </div>";
                 }
             ?>
         </div>
