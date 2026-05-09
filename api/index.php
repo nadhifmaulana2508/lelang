@@ -28,6 +28,15 @@ switch ($endpoint) {
     case 'auth':
         require __DIR__ . '/routes/auth.php';
         break;
+    case 'cessie':
+        require __DIR__ . '/routes/cessie.php';
+        break;
+    case 'dashboard':
+        require __DIR__ . '/routes/dashboard.php';
+        break;
+    case 'agunan':
+        require __DIR__ . '/routes/agunan.php';
+        break;
     default:
         sendResponse(404, "Endpoint tidak ditemukan");
         break;
