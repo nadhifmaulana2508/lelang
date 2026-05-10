@@ -4,32 +4,32 @@ $id_edit = $_GET['id'] ?? null;
 $id_calon_cessie_url = $_GET['id_calon_cessie'] ?? null;
 $r = [];
 
-// 1. AMBIL DATA DETAIL
+// 1. AMBIL DATA DETAIL via PDO
 if($id_edit) {
-    $apiUrl = API_URL . "/agunan/detail?id=" . $id_edit;
-    $response = @file_get_contents($apiUrl);
-    if ($response) {
-        $res_data = json_decode($response, true);
-        if (isset($res_data['data']['id'])) $r = $res_data['data'];
-        elseif (isset($res_data['data']['data']['id'])) $r = $res_data['data']['data'];
-        elseif (isset($res_data['data'][0]['id'])) $r = $res_data['data'][0];
-        else $r = $res_data['data'] ?? [];
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM dummy_asset WHERE id = :id");
+    $stmt->execute([':id' => $id_edit]);
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($data) {
+        $r = $data;
         $id_calon_cessie_url = $r['id_calon_cessie'] ?? $id_calon_cessie_url;
     }
 }
 
-// 2. AMBIL LIST DEBITUR
-$urlCessieList = API_URL . "/cessie/list?limit=10000";
-$resCessie = @file_get_contents($urlCessieList);
+// 2. AMBIL LIST DEBITUR via PDO
+global $pdo;
+$stmtCessie = $pdo->query("SELECT id, nama_nasabah, no_rekening, kode_kantor FROM calon_cessie ORDER BY id DESC");
+$rawData = $stmtCessie->fetchAll(PDO::FETCH_ASSOC);
+
 $listDebitur = [];
-if ($resCessie) {
-    $parsedCessie = json_decode($resCessie, true);
-    $rawData = $parsedCessie['data']['data'] ?? $parsedCessie['data'] ?? [];
-    if (isset($is_superadmin) && !$is_superadmin) {
-        foreach ($rawData as $d) {
-            if (isset($d['kode_kantor']) && $d['kode_kantor'] === $user_kode) $listDebitur[] = $d;
+if (isset($is_superadmin) && !$is_superadmin) {
+    foreach ($rawData as $d) {
+        if ($d['kode_kantor'] === $user_kode) {
+            $listDebitur[] = $d;
         }
-    } else { $listDebitur = $rawData; }
+    }
+} else { 
+    $listDebitur = $rawData; 
 }
 ?>
 
