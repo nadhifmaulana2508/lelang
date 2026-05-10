@@ -140,8 +140,10 @@ require_once __DIR__ . '/../../../api/helpers/dropdown.php';
             <button onclick="closeModal()" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold text-xs">Tutup</button>
         </div>
     </div>
-<!-- Modal Hapus Data -->
-<div id="deleteModal" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
+</div>
+
+<!-- Modal Hapus Data (harus di luar detailModal!) -->
+<div id="deleteModal" class="fixed inset-0 bg-black/60 z-[60] hidden items-center justify-center backdrop-blur-sm transition-opacity">
     <div id="deleteModalContent" class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 transform scale-95 transition-transform duration-200">
         <div class="w-16 h-16 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
             <i class="fas fa-exclamation-triangle text-2xl"></i>
@@ -356,12 +358,18 @@ let deleteTargetId = null;
 function openDeleteModal(id) {
     deleteTargetId = id;
     const modal = document.getElementById('deleteModal');
+    // Gunakan flex agar modal muncul di tengah
     modal.classList.remove('hidden');
+    modal.classList.add('flex');
     setTimeout(() => document.getElementById('deleteModalContent').classList.remove('scale-95'), 10);
 }
 function closeDeleteModal() {
     document.getElementById('deleteModalContent').classList.add('scale-95');
-    setTimeout(() => document.getElementById('deleteModal').classList.add('hidden'), 200);
+    setTimeout(() => {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 200);
 }
 
 document.getElementById('btnConfirmDelete').addEventListener('click', function() {
