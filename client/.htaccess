@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# Jika file atau folder beneran ada (kayak gambar/css), biarkan saja
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Ubah url /calon_cessie menjadi index.php?page=calon_cessie di balik layar
+RewriteRule ^([a-zA-Z0-9_-]+)$ index.php?page=$1 [QSA,L]
