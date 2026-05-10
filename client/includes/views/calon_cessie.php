@@ -374,26 +374,34 @@ function closeDeleteModal() {
 
 document.getElementById('btnConfirmDelete').addEventListener('click', function() {
     if(!deleteTargetId) return;
-    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    this.disabled = true;
+    const btn = this;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
     
     fetch(`<?= API_URL ?>/cessie/delete?id=${deleteTargetId}`, { method: 'DELETE' })
-    .then(res => res.json())
-    .then(res => { 
-        if(res.code === 200) {
+    .then(res => {
+        // Simpan HTTP status code sebelum parse JSON
+        const httpStatus = res.status;
+        return res.json().then(data => ({ httpStatus, data }));
+    })
+    .then(({ httpStatus, data }) => { 
+        // Backend pakai key "status", bukan "code"
+        const isSuccess = (data.status === 200) || (httpStatus === 200 && !data.status);
+        if(isSuccess) {
             closeDeleteModal();
+            deleteTargetId = null;
             // Tunggu modal nutup baru refresh datanya biar smooth
             setTimeout(() => { fetchData(currentPage); }, 300);
         } else {
-            alert('Gagal: ' + res.message); 
+            alert('Gagal menghapus: ' + (data.message || 'Terjadi kesalahan.'));
+            btn.innerHTML = 'Ya, Hapus';
+            btn.disabled = false;
         }
-        this.innerHTML = 'Ya, Hapus';
-        this.disabled = false;
     })
     .catch(err => {
-        alert('Terjadi kesalahan jaringan.');
-        this.innerHTML = 'Ya, Hapus';
-        this.disabled = false;
+        alert('Terjadi kesalahan jaringan/server.');
+        btn.innerHTML = 'Ya, Hapus';
+        btn.disabled = false;
     });
 });
 
