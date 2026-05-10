@@ -85,7 +85,7 @@ $pengajuans = $stmtP->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="p-4 border-t border-gray-100 flex justify-center gap-2">
         <?php for($i=1; $i<=$totPage; $i++): ?>
-            <a href="?page=pengajuan&p=<?= $i ?>&filter_cabang=<?= $filter_cabang ?>&filter_skema=<?= $filter_skema ?>" class="w-8 h-8 flex items-center justify-center rounded-lg font-bold <?= $i==$p ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>"><?= $i ?></a>
+            <a href="<?= BASE_URL ?>/client/pengajuan?p=<?= $i ?>&filter_cabang=<?= $filter_cabang ?>&filter_skema=<?= $filter_skema ?>" class="w-8 h-8 flex items-center justify-center rounded-lg font-bold <?= $i==$p ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>"><?= $i ?></a>
         <?php endfor; ?>
     </div>
 </div>

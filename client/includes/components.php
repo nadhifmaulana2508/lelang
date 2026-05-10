@@ -32,19 +32,19 @@ function renderSidebar($page, $is_superadmin, $user_kode) {
         <div class="flex-1 overflow-y-auto px-4 no-scrollbar">
             <p class="text-[10px] uppercase font-bold text-gray-500 mb-2 px-2 tracking-wider mt-2">Main Menu</p>
             <nav class="space-y-1 mb-6">
-                <a href="dashboard" class="flex items-center px-4 py-3 <?= $page === 'dashboard' ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
+                <a href="<?= BASE_URL ?>/client/dashboard" class="flex items-center px-4 py-3 <?= $page === 'dashboard' ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
                     <i class="fas fa-th-large w-6 <?= $page === 'dashboard' ? 'text-white' : '' ?>"></i> Dashboard
                 </a>
                 
-                <a href="calon_cessie" class="flex items-center px-4 py-3 <?= in_array($page, ['calon_cessie', 'form_cessie']) ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
+                <a href="<?= BASE_URL ?>/client/calon_cessie" class="flex items-center px-4 py-3 <?= in_array($page, ['calon_cessie', 'form_cessie']) ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
                     <i class="fas fa-user-friends w-6 <?= in_array($page, ['calon_cessie', 'form_cessie']) ? 'text-white' : '' ?>"></i> Calon Cessie
                 </a>
 
-                <a href="agunan" class="flex items-center px-4 py-3 <?= $page === 'agunan' ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
+                <a href="<?= BASE_URL ?>/client/agunan" class="flex items-center px-4 py-3 <?= $page === 'agunan' ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
                     <i class="fas fa-images w-6 <?= $page === 'agunan' ? 'text-white' : '' ?>"></i> Data Agunan
                 </a>
 
-                <a href="data" class="flex items-center px-4 py-3 <?= in_array($page, ['data', 'form', 'view']) ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
+                <a href="<?= BASE_URL ?>/client/data" class="flex items-center px-4 py-3 <?= in_array($page, ['data', 'form', 'view']) ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
                     <i class="fas fa-home w-6 <?= in_array($page, ['data', 'form', 'view']) ? 'text-white' : '' ?>"></i> Data Lelang
                 </a>
                 
@@ -56,7 +56,7 @@ function renderSidebar($page, $is_superadmin, $user_kode) {
                     <i class="fas fa-file-contract w-6"></i> Dokumen
                 </a>
                 
-                <a href="pengajuan" class="flex items-center px-4 py-3 <?= $page === 'pengajuan' ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
+                <a href="<?= BASE_URL ?>/client/pengajuan" class="flex items-center px-4 py-3 <?= $page === 'pengajuan' ? 'bg-sidebar-active text-sidebar-active' : 'text-sidebar hover:text-white hover:bg-white/5' ?> rounded-xl font-semibold transition-all">
                     <i class="fas fa-briefcase w-6 <?= $page === 'pengajuan' ? 'text-white' : '' ?>"></i> Investor/Pembeli
                 </a>
                 
@@ -73,7 +73,7 @@ function renderSidebar($page, $is_superadmin, $user_kode) {
                 <a href="#" class="flex items-center px-4 py-3 text-sidebar hover:text-white hover:bg-white/5 rounded-xl font-semibold transition-all">
                     <i class="fas fa-history w-6"></i> Audit Trail
                 </a>
-                <a href="?action=logout" class="flex items-center px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl font-semibold transition-all mt-4">
+                <a href="<?= BASE_URL ?>/client/dashboard?action=logout" class="flex items-center px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl font-semibold transition-all mt-4">
                     <i class="fas fa-sign-out-alt w-6"></i> Logout
                 </a>
             </nav>

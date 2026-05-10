@@ -11,7 +11,7 @@ if ($is_logged_in) {
         $id_del = $_GET['delete'];
         $stmt = $pdo->prepare("DELETE FROM dummy_asset WHERE id = ?");
         $stmt->execute([$id_del]);
-        header("Location: index.php?page=data&msg=deleted");
+        header("Location: " . BASE_URL . "/client/data?msg=deleted");
         exit;
     }
 
@@ -60,12 +60,12 @@ if ($is_logged_in) {
             $data['id'] = $id;
             $stmt = $pdo->prepare($sql);
             $stmt->execute($data);
-            header("Location: index.php?page=data&msg=updated");
+            header("Location: " . BASE_URL . "/client/data?msg=updated");
         } else {
             $sql = "INSERT INTO dummy_asset (kode_kantor, rekening, nasabah, alamat_asset, letak_jaminan, jenis_agunan, jenis_surat, nomor_surat, luas_bangunan, luas_tanah, lantai, harga_jual, proses_penjualan, deskripsi, link_maps, latitude, longitude, tampil, foto1, foto2, foto3, foto4) VALUES (:kode_kantor, :rekening, :nasabah, :alamat_asset, :letak_jaminan, :jenis_agunan, :jenis_surat, :nomor_surat, :luas_bangunan, :luas_tanah, :lantai, :harga_jual, :proses_penjualan, :deskripsi, :link_maps, :latitude, :longitude, :tampil, :foto1, :foto2, :foto3, :foto4)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute($data);
-            header("Location: index.php?page=data&msg=created");
+            header("Location: " . BASE_URL . "/client/data?msg=created");
         }
         exit;
     }

@@ -6,7 +6,7 @@ $r = $stmt->fetch(PDO::FETCH_ASSOC);
 if(!$is_superadmin && $r['kode_kantor'] !== $user_kode) die("Akses Ditolak.");
 ?>
 <div class="flex items-center gap-4 mb-6">
-    <a href="?page=data" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 hover:bg-gray-50"><i class="fas fa-arrow-left"></i></a>
+    <a href="<?= BASE_URL ?>/client/data" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 hover:bg-gray-50"><i class="fas fa-arrow-left"></i></a>
     <h2 class="text-2xl font-extrabold text-gray-900">Detail Aset #<?= $r['id'] ?></h2>
 </div>
 

@@ -28,7 +28,7 @@ $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </select>
         </form>
         <?php endif; ?>
-        <a href="?page=form" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl flex items-center justify-center shrink-0 shadow-md">
+        <a href="<?= BASE_URL ?>/client/form" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl flex items-center justify-center shrink-0 shadow-md">
             <i class="fas fa-plus mr-2"></i> Tambah Aset
         </a>
     </div>
@@ -67,10 +67,10 @@ $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td class="p-4 text-center font-bold text-gray-600"><i class="fas fa-eye text-blue-400 mr-1"></i> <?= $row['view_count'] ?? 0 ?></td>
                     <?php if($is_superadmin): ?><td class="p-4 font-bold text-gray-500"><?= $row['kode_kantor'] ?></td><?php endif; ?>
                     <td class="p-4 text-center flex justify-center gap-2">
-                        <a href="?page=view&id=<?= $row['id'] ?>" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-600 hover:text-white"><i class="fas fa-search"></i></a>
-                        <a href="?page=form&id=<?= $row['id'] ?>" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white"><i class="fas fa-pen"></i></a>
+                        <a href="<?= BASE_URL ?>/client/view?id=<?= $row['id'] ?>" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-600 hover:text-white"><i class="fas fa-search"></i></a>
+                        <a href="<?= BASE_URL ?>/client/form?id=<?= $row['id'] ?>" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white"><i class="fas fa-pen"></i></a>
                         <?php if($is_superadmin): ?>
-                        <a href="?page=data&delete=<?= $row['id'] ?>" onclick="return confirm('Yakin hapus?');" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></a>
+                        <a href="<?= BASE_URL ?>/client/data?delete=<?= $row['id'] ?>" onclick="return confirm('Yakin hapus?');" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white"><i class="fas fa-trash"></i></a>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -82,7 +82,7 @@ $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="p-4 border-t border-gray-100 flex justify-center gap-2">
         <?php for($i=1; $i<=$totPage; $i++): ?>
-            <a href="?page=data&p=<?= $i ?>&filter_cabang=<?= $filter_cabang ?>" class="w-8 h-8 flex items-center justify-center rounded-lg font-bold <?= $i==$p ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>"><?= $i ?></a>
+            <a href="<?= BASE_URL ?>/client/data?p=<?= $i ?>&filter_cabang=<?= $filter_cabang ?>" class="w-8 h-8 flex items-center justify-center rounded-lg font-bold <?= $i==$p ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>"><?= $i ?></a>
         <?php endfor; ?>
     </div>
 </div>
