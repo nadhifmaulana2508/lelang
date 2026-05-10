@@ -11,15 +11,11 @@ function uploadFotoWebp($fileInfo, $targetFolder, $prefix = 'agunan') {
 
     if ($fileInfo["size"] > 5000000) { return ['status' => false, 'msg' => 'Ukuran file maks 5MB.']; }
 
-    $generateName = $prefix . '_' . time() . '_' . substr(uniqid(), -5) . '.webp';
-    $targetFile = rtrim($targetFolder, '/') . '/' . $generateName;
-
     if (!file_exists($targetFolder)) { mkdir($targetFolder, 0777, true); }
 
-    // FALLBACK: Jika server (seperti aaPanel) tidak mendukung imagewebp
-    if (!function_exists('imagewebp')) {
+    // Fungsi Pembantu untuk Fallback Upload
+    $fallbackUpload = function() use ($fileInfo, $targetFolder, $prefix) {
         $ext = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
-        // Jika extension tidak ada, default ke jpg
         if (!$ext) $ext = 'jpg';
         
         $generateNameFallback = $prefix . '_' . time() . '_' . substr(uniqid(), -5) . '.' . $ext;
@@ -30,27 +26,43 @@ function uploadFotoWebp($fileInfo, $targetFolder, $prefix = 'agunan') {
         } else {
             return ['status' => false, 'msg' => 'Gagal mengupload file (Fallback Mode).'];
         }
+    };
+
+    // FALLBACK: Jika server tidak mendukung GD image creation atau imagewebp
+    if (!function_exists('imagewebp') || !function_exists('imagecreatefromjpeg') || !function_exists('imagecreatefrompng')) {
+        return $fallbackUpload();
     }
 
-    $imageType = $check[2]; 
-    $image = null;
+    try {
+        $generateName = $prefix . '_' . time() . '_' . substr(uniqid(), -5) . '.webp';
+        $targetFile = rtrim($targetFolder, '/') . '/' . $generateName;
 
-    switch ($imageType) {
-        case IMAGETYPE_JPEG: $image = imagecreatefromjpeg($fileInfo["tmp_name"]); break;
-        case IMAGETYPE_PNG:
-            $image = imagecreatefrompng($fileInfo["tmp_name"]);
-            imagepalettetotruecolor($image); imagealphablending($image, true); imagesavealpha($image, true);
-            break;
-        case IMAGETYPE_GIF: $image = imagecreatefromgif($fileInfo["tmp_name"]); break;
-        default: return ['status' => false, 'msg' => 'Format hanya JPG, PNG, GIF.'];
+        $imageType = $check[2]; 
+        $image = null;
+
+        switch ($imageType) {
+            case IMAGETYPE_JPEG: $image = imagecreatefromjpeg($fileInfo["tmp_name"]); break;
+            case IMAGETYPE_PNG:
+                $image = imagecreatefrompng($fileInfo["tmp_name"]);
+                if ($image) {
+                    imagepalettetotruecolor($image); imagealphablending($image, true); imagesavealpha($image, true);
+                }
+                break;
+            case IMAGETYPE_GIF: $image = imagecreatefromgif($fileInfo["tmp_name"]); break;
+            default: return $fallbackUpload();
+        }
+
+        if (!$image) { return $fallbackUpload(); }
+
+        $success = imagewebp($image, $targetFile, 80);
+        imagedestroy($image); 
+
+        if ($success) { return ['status' => true, 'filename' => $generateName]; } 
+        else { return $fallbackUpload(); }
+
+    } catch (Throwable $e) {
+        // Jika ada fatal error atau memory limit saat processing, langsung fallback
+        return $fallbackUpload();
     }
-
-    if (!$image) { return ['status' => false, 'msg' => 'Gagal memproses gambar.']; }
-
-    $success = imagewebp($image, $targetFile, 80);
-    imagedestroy($image); 
-
-    if ($success) { return ['status' => true, 'filename' => $generateName]; } 
-    else { return ['status' => false, 'msg' => 'Gagal menyimpan WebP.']; }
 }
 ?>
