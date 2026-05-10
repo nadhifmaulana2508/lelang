@@ -12,20 +12,44 @@ $folder = ($folder == '/' || $folder == '\\') ? '' : $folder;
 define('BASE_URL', $protocol . "://" . $domain . $folder);
 
 // ==========================================
-// 2. LOAD DEPENDENCIES & HEADER
+// 2. CORE ROUTING (INTERCEPT API & CLIENT)
+// ==========================================
+// Ambil URL, pastikan tidak ada slash berlebih di akhir
+$url = isset($_GET['url']) && !empty($_GET['url']) ? rtrim($_GET['url'], '/') : 'home';
+
+// Fallback khusus aaPanel (biasanya melempar ke ?s=)
+if ($url === 'home' && isset($_GET['s']) && !empty($_GET['s'])) {
+    $url = rtrim($_GET['s'], '/');
+}
+
+$url = filter_var($url, FILTER_SANITIZE_URL);
+$urlParts = explode('/', ltrim($url, '/'));
+
+// --- INTERCEPT ROUTE CLIENT (ADMIN) ---
+if ($urlParts[0] === 'client') {
+    $_GET['page'] = isset($urlParts[1]) && !empty($urlParts[1]) ? $urlParts[1] : 'dashboard';
+    if (isset($urlParts[2])) $_GET['id'] = $urlParts[2];
+    require "client/index.php";
+    exit;
+}
+
+// --- INTERCEPT ROUTE API ---
+if ($urlParts[0] === 'api') {
+    $_GET['request'] = implode('/', array_slice($urlParts, 1));
+    require "api/index.php";
+    exit;
+}
+
+// ==========================================
+// 3. LOAD DEPENDENCIES & HEADER (PAGES)
 // ==========================================
 // require_once './api/config/config.php';
 include("views/header.php");
 include("views/navbar.php");
 
 // ==========================================
-// 3. CORE ROUTING LOGIC
+// 4. CORE ROUTING LOGIC (PAGES)
 // ==========================================
-// Ambil URL, pastikan tidak ada slash berlebih di akhir
-$url = isset($_GET['url']) && !empty($_GET['url']) ? rtrim($_GET['url'], '/') : 'home';
-$url = filter_var($url, FILTER_SANITIZE_URL);
-$urlParts = explode('/', $url);
-
 // KEAMANAN: Gunakan basename() agar user tidak bisa melakukan path traversal
 $page = basename($urlParts[0] ?? 'home');
 $param = $urlParts[1] ?? null;
