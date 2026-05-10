@@ -16,6 +16,22 @@ function uploadFotoWebp($fileInfo, $targetFolder, $prefix = 'agunan') {
 
     if (!file_exists($targetFolder)) { mkdir($targetFolder, 0777, true); }
 
+    // FALLBACK: Jika server (seperti aaPanel) tidak mendukung imagewebp
+    if (!function_exists('imagewebp')) {
+        $ext = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
+        // Jika extension tidak ada, default ke jpg
+        if (!$ext) $ext = 'jpg';
+        
+        $generateNameFallback = $prefix . '_' . time() . '_' . substr(uniqid(), -5) . '.' . $ext;
+        $targetFileFallback = rtrim($targetFolder, '/') . '/' . $generateNameFallback;
+        
+        if (move_uploaded_file($fileInfo['tmp_name'], $targetFileFallback)) {
+            return ['status' => true, 'filename' => $generateNameFallback];
+        } else {
+            return ['status' => false, 'msg' => 'Gagal mengupload file (Fallback Mode).'];
+        }
+    }
+
     $imageType = $check[2]; 
     $image = null;
 
