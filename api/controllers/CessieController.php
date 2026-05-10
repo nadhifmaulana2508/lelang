@@ -263,6 +263,11 @@ class CessieController {
             return;
         }
 
+        // Hapus agunan terkait terlebih dahulu untuk menghindari Foreign Key Constraint
+        $stmtDeleteAgunan = $this->pdo->prepare("DELETE FROM cessie_agunan WHERE id_calon_cessie = ?");
+        $stmtDeleteAgunan->execute([$id]);
+
+        // Setelah aman, hapus master cessie
         $stmt = $this->pdo->prepare("DELETE FROM calon_cessie WHERE id = ?");
         if ($stmt->execute([$id])) {
             sendResponse(200, "Data calon cessie berhasil dihapus");

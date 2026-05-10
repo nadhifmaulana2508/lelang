@@ -9,60 +9,35 @@ function uploadFotoWebp($fileInfo, $targetFolder, $prefix = 'agunan') {
     $check = getimagesize($fileInfo["tmp_name"]);
     if($check === false) { return ['status' => false, 'msg' => 'File bukan gambar valid.']; }
 
-    if ($fileInfo["size"] > 5000000) { return ['status' => false, 'msg' => 'Ukuran file maks 5MB.']; }
+    // Validasi Maksimal 2MB sesuai instruksi
+    if ($fileInfo["size"] > 2000000) { 
+        return ['status' => false, 'msg' => 'Ukuran file foto maksimal 2MB.']; 
+    }
 
     if (!file_exists($targetFolder)) { mkdir($targetFolder, 0777, true); }
 
-    // Fungsi Pembantu untuk Fallback Upload
-    $fallbackUpload = function() use ($fileInfo, $targetFolder, $prefix) {
-        $ext = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
-        if (!$ext) $ext = 'jpg';
-        
-        $generateNameFallback = $prefix . '_' . time() . '_' . substr(uniqid(), -5) . '.' . $ext;
-        $targetFileFallback = rtrim($targetFolder, '/') . '/' . $generateNameFallback;
-        
-        if (move_uploaded_file($fileInfo['tmp_name'], $targetFileFallback)) {
-            return ['status' => true, 'filename' => $generateNameFallback];
-        } else {
-            return ['status' => false, 'msg' => 'Gagal mengupload file (Fallback Mode).'];
-        }
-    };
-
-    // FALLBACK: Jika server tidak mendukung GD image creation atau imagewebp
-    if (!function_exists('imagewebp') || !function_exists('imagecreatefromjpeg') || !function_exists('imagecreatefrompng')) {
-        return $fallbackUpload();
+    $ext = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
+    if (!$ext) {
+        // Coba deteksi dari mime type jika extension kosong
+        $imageType = $check[2];
+        if ($imageType === IMAGETYPE_JPEG) $ext = 'jpg';
+        elseif ($imageType === IMAGETYPE_PNG) $ext = 'png';
+        elseif ($imageType === IMAGETYPE_GIF) $ext = 'gif';
+        else $ext = 'jpg';
     }
 
+    // Rename file agar unik tanpa mengubah format
+    $generateName = $prefix . '_' . time() . '_' . substr(uniqid(), -5) . '.' . $ext;
+    $targetFile = rtrim($targetFolder, '/') . '/' . $generateName;
+
     try {
-        $generateName = $prefix . '_' . time() . '_' . substr(uniqid(), -5) . '.webp';
-        $targetFile = rtrim($targetFolder, '/') . '/' . $generateName;
-
-        $imageType = $check[2]; 
-        $image = null;
-
-        switch ($imageType) {
-            case IMAGETYPE_JPEG: $image = imagecreatefromjpeg($fileInfo["tmp_name"]); break;
-            case IMAGETYPE_PNG:
-                $image = imagecreatefrompng($fileInfo["tmp_name"]);
-                if ($image) {
-                    imagepalettetotruecolor($image); imagealphablending($image, true); imagesavealpha($image, true);
-                }
-                break;
-            case IMAGETYPE_GIF: $image = imagecreatefromgif($fileInfo["tmp_name"]); break;
-            default: return $fallbackUpload();
+        if (move_uploaded_file($fileInfo['tmp_name'], $targetFile)) {
+            return ['status' => true, 'filename' => $generateName];
+        } else {
+            return ['status' => false, 'msg' => 'Gagal memindahkan file ke server.'];
         }
-
-        if (!$image) { return $fallbackUpload(); }
-
-        $success = imagewebp($image, $targetFile, 80);
-        imagedestroy($image); 
-
-        if ($success) { return ['status' => true, 'filename' => $generateName]; } 
-        else { return $fallbackUpload(); }
-
     } catch (Throwable $e) {
-        // Jika ada fatal error atau memory limit saat processing, langsung fallback
-        return $fallbackUpload();
+        return ['status' => false, 'msg' => 'Gagal mengupload file: ' . $e->getMessage()];
     }
 }
 ?>
