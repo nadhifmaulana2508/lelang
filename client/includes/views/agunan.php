@@ -13,9 +13,9 @@ $id_cessie = $_GET['id_cessie'] ?? null;
     
     <div class="flex gap-2">
         <?php if ($id_cessie): ?>
-            <a href="?page=calon_cessie" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold text-xs hover:bg-gray-200 transition-all"><i class="fas fa-arrow-left mr-1"></i> Kembali</a>
+            <a href="<?= BASE_URL ?>/client/calon_cessie" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold text-xs hover:bg-gray-200 transition-all"><i class="fas fa-arrow-left mr-1"></i> Kembali</a>
         <?php endif; ?>
-        <a href="?page=form_agunan<?= $id_cessie ? '&id_calon_cessie='.$id_cessie : '' ?>" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-xs hover:bg-blue-700 flex items-center shadow-lg transition-all">
+        <a href="<?= BASE_URL ?>/client/form_agunan<?= $id_cessie ? '?id_calon_cessie='.$id_cessie : '' ?>" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-xs hover:bg-blue-700 flex items-center shadow-lg transition-all">
             <i class="fas fa-plus md:mr-1"></i> <span class="hidden md:inline">Tambah Agunan Baru</span>
         </a>
     </div>
@@ -148,7 +148,7 @@ function loadAgunan() {
                     <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
                         <div class="text-[10px] font-bold text-green-600">${rp(item.nilai_pasar)}</div>
                         <div class="flex gap-2">
-                            <a href="?page=form_agunan&id=${item.id}" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-pen text-xs"></i></a>
+                            <a href="<?= BASE_URL ?>/client/form_agunan?id=${item.id}" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-pen text-xs"></i></a>
                             ${btnDelete}
                         </div>
                     </div>

@@ -17,7 +17,7 @@ require_once __DIR__ . '/../../../api/helpers/dropdown.php';
                 <i class="fas fa-chart-pie md:mr-1"></i> <span class="hidden md:inline">Lihat Rekap</span>
             </button>
             
-            <a href="form_cessie" class="px-3 py-2 bg-blue-600 text-white rounded-lg font-bold text-xs hover:bg-blue-700 flex items-center shadow-sm transition-all">
+            <a href="<?= BASE_URL ?>/client/form_cessie" class="px-3 py-2 bg-blue-600 text-white rounded-lg font-bold text-xs hover:bg-blue-700 flex items-center shadow-sm transition-all">
                 <i class="fas fa-plus md:mr-1"></i> <span class="hidden md:inline">Tambah Data</span>
             </a>
         </div>
@@ -260,8 +260,8 @@ function renderTable(data) {
             </td>
             <td class="py-3 px-3 text-center space-x-2 whitespace-nowrap">
                 <button onclick="openDetailModal(${rowJson})" class="text-slate-500 hover:text-blue-600" title="Lihat Detail"><i class="fas fa-eye"></i></button>
-                <a href="?page=agunan&id_cessie=${row.id}" class="text-blue-500 hover:text-blue-700" title="Kelola Agunan"><i class="fas fa-home"></i></a>
-                <a href="form_cessie?id=${row.id}" class="text-indigo-500 hover:text-indigo-700" title="Edit"><i class="fas fa-pen"></i></a>
+                <a href="<?= BASE_URL ?>/client/agunan?id_cessie=${row.id}" class="text-blue-500 hover:text-blue-700" title="Kelola Agunan"><i class="fas fa-home"></i></a>
+                <a href="<?= BASE_URL ?>/client/form_cessie?id=${row.id}" class="text-indigo-500 hover:text-indigo-700" title="Edit"><i class="fas fa-pen"></i></a>
                 ${btnDel}
             </td>
         </tr>`;

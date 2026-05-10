@@ -51,7 +51,7 @@ if ($resCessie) {
 </style>
 
 <div class="flex items-center gap-4 mb-6">
-    <a href="?page=agunan" class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-200 hover:bg-gray-50"><i class="fas fa-arrow-left"></i></a>
+    <a href="<?= BASE_URL ?>/client/agunan" class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-200 hover:bg-gray-50"><i class="fas fa-arrow-left"></i></a>
     <h2 class="text-2xl font-extrabold text-gray-900" id="pageTitle"><?= $id_edit ? 'Edit Data Agunan' : 'Tambah Agunan Baru' ?></h2>
 </div>
 

@@ -10,7 +10,7 @@ if (isset($_POST['login'])) {
         $_SESSION['logged_in'] = true;
         $_SESSION['kode_kantor'] = $kode_kantor;
         $_SESSION['role'] = ($kode_kantor === '000') ? 'superadmin' : 'cabang';
-        header("Location: index.php");
+        header("Location: " . BASE_URL . "/client/dashboard");
         exit;
     } else {
         $error_login = "Kode Kantor atau Password salah!";
@@ -19,7 +19,7 @@ if (isset($_POST['login'])) {
 
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     session_destroy();
-    header("Location: index.php");
+    header("Location: " . BASE_URL . "/client/dashboard");
     exit;
 }
 
