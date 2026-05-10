@@ -2,14 +2,14 @@
 $id_edit = $_GET['id'] ?? null;
 $r = [];
 
-// Jika Mode Edit, fetch data dari endpoint Detail API
+// Jika Mode Edit, ambil data langsung via PDO
 if($id_edit) {
-    $apiUrl = API_URL . "/cessie/detail?id=" . $id_edit;
-    $response = @file_get_contents($apiUrl);
-    
-    if ($response) {
-        $res_data = json_decode($response, true);
-        $r = $res_data['data'] ?? [];
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM calon_cessie WHERE id = :id");
+    $stmt->execute([':id' => $id_edit]);
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($data) {
+        $r = $data;
     }
 }
 ?>
