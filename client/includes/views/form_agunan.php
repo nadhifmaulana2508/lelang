@@ -63,10 +63,19 @@ if (isset($is_superadmin) && !$is_superadmin) {
             <h3 class="font-bold text-blue-600 border-b pb-2 text-sm uppercase mb-4">Informasi Dasar & Legalitas</h3>
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">Pemilik Agunan (Debitur) <span class="text-red-500">*</span></label>
-                <select name="id_calon_cessie" id="i_calon_cessie" class="select2-debitur w-full" required>
+                <?php if($id_edit): ?>
+                    <!-- Hidden input supaya tetep ke-submit pas disabled -->
+                    <input type="hidden" name="id_calon_cessie" value="<?= $r['id_calon_cessie'] ?? '' ?>">
+                <?php endif; ?>
+                <select name="id_calon_cessie" id="i_calon_cessie" class="select2-debitur w-full" required <?= $id_edit ? 'disabled' : '' ?>>
                     <option value="">-- Ketik & Pilih Nasabah --</option>
                     <?php foreach ($listDebitur as $d): ?>
-                        <option value="<?= $d['id'] ?>" <?= ($id_calon_cessie_url == $d['id']) ? 'selected' : '' ?>>
+                        <?php 
+                            $isSelected = '';
+                            if (isset($r['id_calon_cessie']) && $r['id_calon_cessie'] == $d['id']) { $isSelected = 'selected'; }
+                            else if ($id_calon_cessie_url == $d['id']) { $isSelected = 'selected'; }
+                        ?>
+                        <option value="<?= $d['id'] ?>" <?= $isSelected ?>>
                             <?= $d['nama_nasabah'] ?> (Rek: <?= $d['no_rekening'] ?>)
                         </option>
                     <?php endforeach; ?>
@@ -81,10 +90,10 @@ if (isset($is_superadmin) && !$is_superadmin) {
                     <label class="text-xs font-bold text-gray-500 mb-1 block">Jenis Surat</label>
                     <select name="jenis_surat" id="i_jenis_surat" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">- Pilih -</option>
-                        <option value="SHM">SHM</option>
-                        <option value="SHGB">SHGB</option>
-                        <option value="BPKB">BPKB</option>
-                        <option value="Lainnya">Lainnya</option>
+                        <option value="SHM" <?= (isset($r['jenis_surat']) && $r['jenis_surat'] == 'SHM') ? 'selected' : '' ?>>SHM</option>
+                        <option value="SHGB" <?= (isset($r['jenis_surat']) && $r['jenis_surat'] == 'SHGB') ? 'selected' : '' ?>>SHGB</option>
+                        <option value="BPKB" <?= (isset($r['jenis_surat']) && $r['jenis_surat'] == 'BPKB') ? 'selected' : '' ?>>BPKB</option>
+                        <option value="Lainnya" <?= (isset($r['jenis_surat']) && $r['jenis_surat'] == 'Lainnya') ? 'selected' : '' ?>>Lainnya</option>
                     </select>
                 </div>
                 <div>
@@ -104,8 +113,8 @@ if (isset($is_superadmin) && !$is_superadmin) {
                 <div>
                     <label class="text-xs font-bold text-gray-500 mb-1 block">Status Aset</label>
                     <select name="status" id="i_status" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none font-bold text-gray-700 focus:ring-2 focus:ring-blue-500">
-                        <option value="Open">🟢 Open</option>
-                        <option value="Terjual">🔴 Terjual</option>
+                        <option value="Open" <?= (isset($r['status']) && $r['status'] == 'Open') ? 'selected' : '' ?>>🟢 Open</option>
+                        <option value="Terjual" <?= (isset($r['status']) && $r['status'] == 'Terjual') ? 'selected' : '' ?>>🔴 Terjual</option>
                     </select>
                 </div>
             </div>
@@ -200,31 +209,7 @@ $(document).ready(function() {
     $('.format-ribuan').on('keyup', function() { $(this).val(formatTitik($(this).val())); });
 
     const idEdit = $('#h_id_agunan').val();
-    if (idEdit && $('#i_jenis_agunan').val() === '') {
-        fetch(`<?= API_URL ?>/agunan/detail?id=${idEdit}`)
-        .then(res => res.json())
-        .then(res => {
-            const data = res.data?.data || res.data || res.data[0];
-            if (data) {
-                $('#i_calon_cessie').val(data.id_calon_cessie).trigger('change');
-                $('#i_jenis_agunan').val(data.jenis_agunan);
-                $('#i_jenis_surat').val(data.jenis_surat);
-                $('#i_nomor_surat').val(data.nomor_surat);
-                $('#i_alamat').val(data.alamat_agunan);
-                $('#i_koordinat').val(data.koordinat);
-                $('#i_status').val(data.status);
-                $('#i_link_maps').val(data.link_maps);
-                $('#i_lt').val(formatTitik(data.luas_tanah));
-                $('#i_lb').val(formatTitik(data.luas_bangunan));
-                $('#i_pasar').val(formatTitik(data.nilai_pasar));
-                $('#i_likuidasi').val(formatTitik(data.nilai_likuidasi));
-                if(data.foto1) document.getElementById('txt_foto1').innerHTML = `<i class="fas fa-check-circle text-green-500"></i> ${data.foto1}`;
-                if(data.foto2) document.getElementById('txt_foto2').innerHTML = `<i class="fas fa-check-circle text-green-500"></i> ${data.foto2}`;
-                if(data.foto3) document.getElementById('txt_foto3').innerHTML = `<i class="fas fa-check-circle text-green-500"></i> ${data.foto3}`;
-                if(data.foto4) document.getElementById('txt_foto4').innerHTML = `<i class="fas fa-check-circle text-green-500"></i> ${data.foto4}`;
-            }
-        });
-    }
+    // JS fetch fallback dihapus karena PHP sudah render semua secara instan
 });
 
 document.getElementById('formAgunan').addEventListener('submit', function(e) {
