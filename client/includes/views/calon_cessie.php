@@ -140,6 +140,19 @@ require_once __DIR__ . '/../../../api/helpers/dropdown.php';
             <button onclick="closeModal()" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold text-xs">Tutup</button>
         </div>
     </div>
+<!-- Modal Hapus Data -->
+<div id="deleteModal" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
+    <div id="deleteModalContent" class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 transform scale-95 transition-transform duration-200">
+        <div class="w-16 h-16 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
+            <i class="fas fa-exclamation-triangle text-2xl"></i>
+        </div>
+        <h3 class="text-center font-extrabold text-gray-900 text-lg mb-2">Hapus Data?</h3>
+        <p class="text-center text-sm text-gray-500 mb-6">Data yang dihapus tidak bisa dikembalikan. Lanjutkan?</p>
+        <div class="flex gap-3">
+            <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-colors">Batal</button>
+            <button id="btnConfirmDelete" class="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30">Ya, Hapus</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -230,7 +243,7 @@ function renderTable(data) {
         else if(row.status === 'Review Legal') stClass = "bg-yellow-50 text-yellow-600 border-yellow-200";
         else if(row.status === 'Diminati') stClass = "bg-blue-50 text-blue-600 border-blue-200";
 
-        const btnDel = isSuperadmin ? `<button onclick="deleteCessie(${row.id})" class="text-red-500 hover:text-red-700 transition-colors" title="Hapus"><i class="fas fa-trash"></i></button>` : '';
+        const btnDel = isSuperadmin ? `<button onclick="openDeleteModal(${row.id})" class="text-red-500 hover:text-red-700 transition-colors" title="Hapus"><i class="fas fa-trash"></i></button>` : '';
         const rowJson = JSON.stringify(row).replace(/"/g, '&quot;');
 
         html += `
@@ -339,13 +352,42 @@ function closeModal() {
     setTimeout(() => document.getElementById('detailModal').classList.add('hidden'), 200);
 }
 
-function deleteCessie(id) {
-    if(confirm('Yakin ingin menghapus master data ini?')) {
-        fetch(`<?= API_URL ?>/cessie/delete?id=${id}`, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(res => { if(res.code === 200) fetchData(currentPage); else alert('Gagal: ' + res.message); });
-    }
+let deleteTargetId = null;
+function openDeleteModal(id) {
+    deleteTargetId = id;
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => document.getElementById('deleteModalContent').classList.remove('scale-95'), 10);
 }
+function closeDeleteModal() {
+    document.getElementById('deleteModalContent').classList.add('scale-95');
+    setTimeout(() => document.getElementById('deleteModal').classList.add('hidden'), 200);
+}
+
+document.getElementById('btnConfirmDelete').addEventListener('click', function() {
+    if(!deleteTargetId) return;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    this.disabled = true;
+    
+    fetch(`<?= API_URL ?>/cessie/delete?id=${deleteTargetId}`, { method: 'DELETE' })
+    .then(res => res.json())
+    .then(res => { 
+        if(res.code === 200) {
+            closeDeleteModal();
+            // Tunggu modal nutup baru refresh datanya biar smooth
+            setTimeout(() => { fetchData(currentPage); }, 300);
+        } else {
+            alert('Gagal: ' + res.message); 
+        }
+        this.innerHTML = 'Ya, Hapus';
+        this.disabled = false;
+    })
+    .catch(err => {
+        alert('Terjadi kesalahan jaringan.');
+        this.innerHTML = 'Ya, Hapus';
+        this.disabled = false;
+    });
+});
 
 // AUTO LOAD
 document.addEventListener('DOMContentLoaded', () => { fetchData(1); });

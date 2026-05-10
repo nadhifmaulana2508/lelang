@@ -1,42 +1,24 @@
-# Issue: Bug Error Upload Foto (WebP) di Server aaPanel (Kesalahan Jaringan 500)
+# Issue: Kumpulan Bug Minor (Agunan, Upload WebP, Delete Modal)
 
-## 1. Deskripsi Permasalahan
-Saat pengguna mencoba men-submit data Agunan beserta foto, muncul peringatan JavaScript bertuliskan: **"Terjadi kesalahan jaringan/server."** Proses simpan pun langsung terhenti. 
-Berdasarkan keterangan, masalah ini terjadi di server *production* (aaPanel), sedangkan di *local* (XAMPP) fitur upload foto berfungsi normal dengan membuat file ekstensi `.webp`.
+Dokumen ini melacak tiga bug yang ditemukan pada iterasi pengembangan terakhir:
 
-## 2. Analisa Akar Masalah (Root Cause)
-Pesan "kesalahan jaringan/server" muncul karena proses `fetch()` JavaScript di *client* tidak menerima balasan JSON dari API, melainkan menerima HTTP Status 500 (Internal Server Error) atau koneksi terputus.
+## 1. Bug Form Agunan: ID Tidak Terkunci (Gagal Fetch Data)
+- **File**: `client/includes/views/form_agunan.php`
+- **Gejala**: Saat mode Edit (`?id=...`), form tampil kosong dan data lama tidak ditarik dari database. 
+- **Penyebab**: Terjadi kesalahan ketik (typo) pada *query database*. Sistem mencari data ke tabel `dummy_asset` yang mana seharusnya adalah `cessie_agunan`. Karena data tidak ditemukan, form merender dalam mode "Tambah Baru" (kosong).
+- **Solusi**: Memperbaiki nama tabel di dalam pemanggilan PDO menjadi `cessie_agunan`.
 
-Artinya, **Skrip Backend PHP (API) mengalami Fatal Error (Crash)** saat sedang memproses gambar. 
+## 2. Bug Upload Foto WebP: Fallback Kurang Handal
+- **File**: `api/helpers/upload.php`
+- **Gejala**: Ketika upload gambar dengan format asli (`.jpg`/`.png`), terkadang masih gagal atau terjadi error di sisi server.
+- **Penyebab**: Pengecekan `function_exists('imagewebp')` tidak sepenuhnya menjamin konversi WebP berhasil (misal: memori PHP penuh, atau fungsi `imagecreatefromjpeg` yang justru tidak aktif). Jika konversi gagal di tengah jalan, script tidak otomatis beralih (*fallback*) ke `move_uploaded_file`.
+- **Solusi**: Menggunakan struktur `try...catch`. Jika terjadi *Throwable exception* atau kegagalan apapun selama proses konversi `imagewebp`, sistem akan langsung melempar gambar tersebut ke fungsi `fallbackUpload()` (simpan menggunakan format dan file aslinya secara aman).
 
-Di dalam file `api/helpers/upload.php`, terdapat fungsi pemrosesan konversi gambar:
-```php
-$image = imagecreatefromjpeg($fileInfo["tmp_name"]);
-$success = imagewebp($image, $targetFile, 80);
-```
+## 3. Bug UX Delete Cessie: Alert Konvensional
+- **File**: `client/includes/views/calon_cessie.php`
+- **Gejala**: Saat klik ikon hapus tong sampah, browser memunculkan popup konfirmasi bawaan `confirm()` yang terlihat tidak profesional.
+- **Penyebab**: Konfirmasi hapus masih menggunakan JavaScript native `confirm()` dan `alert()`.
+- **Solusi**: Mengganti fungsi `deleteCessie()` menjadi sistem *Custom HTML Modal* (seperti `detailModal`) agar tampilan konfirmasi hapus terlihat lebih elegan, lalu otomatis melakukan `fetchData()` ulang agar tabel langsung ter-update (data hilang) tanpa perlu memuat ulang seluruh halaman.
 
-**Kenapa Crash di aaPanel?**
-Sangat besar kemungkinannya ekstensi **GD Library** pada PHP di aaPanel Anda **tidak dikompilasi dengan dukungan format WebP**. 
-- Saat PHP mencoba memanggil fungsi `imagewebp()`, fungsi tersebut dianggap tidak ada (*Undefined Function*) sehingga langsung menyebabkan *Fatal Error* / *Crash*.
-- Di XAMPP, ekstensi GD PHP bawaannya sudah dikompilasi secara lengkap beserta dukungan WebP, sehingga proses `imagewebp()` berjalan normal.
-
-*(Catatan: Kemungkinan kecil lain adalah `folder permissions` pada direktori `uploads/` yang tidak bisa ditulis (writable) oleh user Nginx/Apache. Namun ini biasanya hanya memicu Warning, bukan Fatal Error 500, kecuali strict mode nyala).*
-
-## 3. Rencana Solusi (Proposed Fix)
-
-Ada dua opsi untuk menyelesaikan ini. Salah satunya berfokus di Server, dan yang satu lagi berfokus pada Kode (sebagai pengaman).
-
-### A. Solusi Konfigurasi Server (Di Panel aaPanel Anda)
-1. Buka dashboard **aaPanel** Anda.
-2. Masuk ke menu **App Store** -> Tab **Installed**.
-3. Cari versi **PHP** yang sedang aktif (misalnya PHP 8.1), lalu klik **Setting**.
-4. Masuk ke bagian **Install extensions**. Pastikan ekstensi **GD**, **fileinfo**, dan **exif** sudah terinstal.
-5. *(Jika masih error)* Biasanya beberapa instalasi PHP standar aaPanel belum mencakup flag `--with-webp`. Anda mungkin harus meng-*uninstall* PHP tersebut dan meng-*install* ulangnya menggunakan mode **Compiled (Kompilasi source)** agar WebP Support aktif otomatis di GD.
-
-### B. Solusi Pengaman pada Kode (Graceful Fallback)
-Agar aplikasi tidak langsung mati (Crash) jika server tidak mendukung WebP, kita bisa mengubah kode di `api/helpers/upload.php` menjadi lebih pintar:
-1. Kode akan mengecek apakah server punya fungsi `imagewebp` dengan `function_exists('imagewebp')`.
-2. Jika ada, maka gambar akan dikompres dan dikonversi ke `.webp`.
-3. **Jika tidak ada**, maka gambar tidak perlu dikonversi ke WebP, melainkan langsung di-upload apa adanya menggunakan format asli (seperti `.jpg` atau `.png`) dengan fungsi `move_uploaded_file()`.
-
-Dengan *solusi kode* ini, fitur upload akan tetap berjalan dan anti-*crash* apapun server yang digunakan!
+---
+Ketiga perbaikan di atas akan segera diimplementasikan dan digabungkan.

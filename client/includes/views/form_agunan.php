@@ -7,7 +7,7 @@ $r = [];
 // 1. AMBIL DATA DETAIL via PDO
 if($id_edit) {
     global $pdo;
-    $stmt = $pdo->prepare("SELECT * FROM dummy_asset WHERE id = :id");
+    $stmt = $pdo->prepare("SELECT * FROM cessie_agunan WHERE id = :id");
     $stmt->execute([':id' => $id_edit]);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($data) {
